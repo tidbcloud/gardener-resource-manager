@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-REGISTRY                    := eu.gcr.io/gardener-project
+REGISTRY                    := gcr.io/pingcap-public
 IMAGE_PREFIX                := $(REGISTRY)/gardener
 REPO_ROOT                   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 HACK_DIR                    := $(REPO_ROOT)/hack

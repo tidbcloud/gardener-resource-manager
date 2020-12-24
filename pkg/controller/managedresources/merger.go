@@ -142,21 +142,36 @@ func mergeServiceAccount(scheme *runtime.Scheme, oldObj, newObj runtime.Object) 
 	return scheme.Convert(newServiceAccount, newObj, nil)
 }
 
+// mergeMapsBasedOnOldMap merges the values of the desired map into the current map.
+// It takes an optional map of old desired values and removes any keys/values from the resulting map
+// that were once desired (part of `old`) but are not desired anymore.
 func mergeMapsBasedOnOldMap(desired, current, old map[string]string) map[string]string {
 	out := map[string]string{}
+	// use current as base
+	for k, v := range current {
+		out[k] = v
+	}
+
+	// overwrite desired values
 	for k, v := range desired {
 		out[k] = v
 	}
 
-	for k, v := range current {
-		oldValue, ok := old[k]
-		desiredValue, ok2 := desired[k]
-
-		if ok && oldValue == v && (!ok2 || desiredValue != v) {
+	// check if we should remove values which were once desired but are not desired anymore
+	for k, oldValue := range old {
+		currentValue, isInCurrent := current[k]
+		if !isInCurrent || currentValue != oldValue {
+			// is not part of the current map anymore or has been changed by the enduser -> don't remove
 			continue
 		}
 
-		out[k] = v
+		if _, isDesired := desired[k]; !isDesired {
+			delete(out, k)
+		}
+	}
+
+	if len(out) == 0 {
+		return nil
 	}
 
 	return out
